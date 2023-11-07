@@ -6,7 +6,7 @@ require('dotenv').config()
 const app = express()
 //middleware
 app.use(cors())
-app.use(express())
+app.use(express.json())
 
 
 
@@ -35,6 +35,17 @@ async function run() {
         const User = database.collection('User')
         // Send a ping to confirm a successful connection
 
+        app.post('/user', async (req, res) => {
+            const user = req.body;
+            console.log(user);
+            const result = await User.insertOne(user)
+            res.send(result)
+        })
+        app.get('/user', async (req, res) => {
+            const cursor = User.find()
+            const result = await cursor.toArray()
+            res.send(result)
+        })
 
         await client.db("admin").command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
