@@ -94,6 +94,13 @@ async function run() {
             const result = await cursor.toArray()
             res.send(result)
         })
+        app.get('/watchList/:id', async (req, res) => {
+            const id = req.params.id
+            const query = { userFirebaseUid: id }
+            const cursor =  WatchList.find(query)
+            const result = await cursor.toArray()
+            res.send(result)
+        })
         //Post Job
         app.post('/job', async (req, res) => {
             const job = req.body;
