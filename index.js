@@ -33,8 +33,9 @@ async function run() {
         await client.connect();
         const database = client.db("JobLancer")
         const User = database.collection('User')
+        const Job = database.collection('Job')
         // Send a ping to confirm a successful connection
-
+        //User 
         app.post('/user', async (req, res) => {
             const user = req.body;
             console.log(user);
@@ -63,6 +64,23 @@ async function run() {
             const result = await User.updateOne(query, UpdateUser)
             res.send(result)
         })
+
+        //Post Job
+        app.post('/job', async (req, res) => {
+            const job = req.body;
+            console.log(job);
+            const result = await Job.insertOne(job)
+            res.send(result)
+        })
+        app.get('/job', async (req, res) => {
+            const cursor = Job.find()
+            const result = await cursor.toArray()
+            res.send(result)
+        })
+
+
+
+
         await client.db("admin").command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
     } finally {
