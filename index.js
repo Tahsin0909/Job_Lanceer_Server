@@ -46,7 +46,23 @@ async function run() {
             const result = await cursor.toArray()
             res.send(result)
         })
-
+        app.get('/user/:id', async (req, res) => {
+            const id = req.params.id
+            const query = { userFirebaseUid: id }
+            const result = await User.findOne(query)
+            res.send(result)
+        })
+        app.patch('/user/:id', async (req, res) => {
+            const id = req.params.id
+            const query = { userFirebaseUid: id }
+            const UpdateUser = {
+                $set: {
+                    userLastSignInTime: req.body.userLastSignInTime
+                }
+            }
+            const result = await User.updateOne(query, UpdateUser)
+            res.send(result)
+        })
         await client.db("admin").command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
     } finally {
