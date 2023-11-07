@@ -34,6 +34,7 @@ async function run() {
         const database = client.db("JobLancer")
         const User = database.collection('User')
         const Job = database.collection('Job')
+        const WatchList = database.collection('WatchList')
         // Send a ping to confirm a successful connection
         //User 
         app.post('/user', async (req, res) => {
@@ -64,7 +65,35 @@ async function run() {
             const result = await User.updateOne(query, UpdateUser)
             res.send(result)
         })
+        //WatchList
+        app.put('/watchList', async (req, res) => {
+            const watchListData = req.body
+            console.log(watchListData);
+            const options = { upsert: true }
+            const query = {
+                jobId: watchListData.jobId,
+                userFirebaseUid: watchListData.userFirebaseUid,
+            }
+            const UpdateCart = {
+                $set:
+                {
+                    userFirebaseUid:watchListData.userFirebaseUid,
+                    email:watchListData.email,
+                    jobTitle:watchListData.jobTitle,
+                    jobCategory:watchListData.jobCategory,
+                    postedDate:watchListData.postedDate,
+                    jobId:watchListData.jobId
+                }
 
+            };
+            const result = await WatchList.updateOne(query, UpdateCart, options)
+            res.send(result)
+        })
+        app.get('/watchList', async (req, res) => {
+            const cursor = WatchList.find()
+            const result = await cursor.toArray()
+            res.send(result)
+        })
         //Post Job
         app.post('/job', async (req, res) => {
             const job = req.body;
