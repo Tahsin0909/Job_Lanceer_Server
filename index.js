@@ -5,12 +5,40 @@ const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config()
 const app = express()
 //middleware
-app.use(cors())
+app.use(cors({
+    origin: ['http://localhost:5173'],
+    credentials: true
+}))
 app.use(express.json())
+app.use(cors({
+    origin: ['http://localhost:5173'],
+    credentials: true
+}))
 
 
-
-
+const verify = async (req, res, next) => {
+    const token = req.cookies?.token
+    if (!token) {
+        return res.status(401).send(
+            {
+                status: "UnAuthorized",
+                code: '401'
+            }
+        )
+    }
+    jwt.verify(token, Secrete, (err, decode) => {
+        if (err) {
+            return res.status(401).send(
+                {
+                    status: "UnAuthorized",
+                    code: '401'
+                }
+            )
+        }
+        // req.decoded = decode;
+        next();
+    })
+}
 
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.uxzfht6.mongodb.net/?retryWrites=true&w=majority`;
