@@ -35,6 +35,7 @@ async function run() {
         const User = database.collection('User')
         const Job = database.collection('Job')
         const WatchList = database.collection('WatchList')
+        const Gig = database.collection('Gig')
         // Send a ping to confirm a successful connection
         //User 
         app.post('/user', async (req, res) => {
@@ -77,12 +78,12 @@ async function run() {
             const UpdateCart = {
                 $set:
                 {
-                    userFirebaseUid:watchListData.userFirebaseUid,
-                    email:watchListData.email,
-                    jobTitle:watchListData.jobTitle,
-                    jobCategory:watchListData.jobCategory,
-                    postedDate:watchListData.postedDate,
-                    jobId:watchListData.jobId
+                    userFirebaseUid: watchListData.userFirebaseUid,
+                    email: watchListData.email,
+                    jobTitle: watchListData.jobTitle,
+                    jobCategory: watchListData.jobCategory,
+                    postedDate: watchListData.postedDate,
+                    jobId: watchListData.jobId
                 }
 
             };
@@ -97,7 +98,7 @@ async function run() {
         app.get('/watchList/:id', async (req, res) => {
             const id = req.params.id
             const query = { userFirebaseUid: id }
-            const cursor =  WatchList.find(query)
+            const cursor = WatchList.find(query)
             const result = await cursor.toArray()
             res.send(result)
         })
@@ -113,8 +114,54 @@ async function run() {
             const result = await cursor.toArray()
             res.send(result)
         })
+        app.get('/job/:id', async (req, res) => {
+            const id = req.params.id
+            const query = { userFirebaseUid: id }
+            const cursor = Job.find(query)
+            const result = await cursor.toArray()
+            res.send(result)
+        })
+        //Gig
+        app.put('/gig', async (req, res) => {
+            const GigData = req.body
+            console.log(GigData);
+            const options = { upsert: true }
+            const query = {
+                userFirebaseUid: GigData.userFirebaseUid,
+            }
+            const UpdateCart = {
+                $set:
+                {
+                    email: GigData.email ,
+                    gigTitle: GigData.gigTitle ,
+                    description: GigData.description ,
+                    minPrice: GigData.minPrice ,
+                    maxPrice: GigData.maxPrice ,
+                    tag1: GigData.tag1 ,
+                    tag2: GigData.tag2 ,
+                    rating: GigData.rating ,
+                    gigCategory: GigData.gigCategory ,
+                    userFirebaseUid: GigData.userFirebaseUid ,
+                    userName: GigData.userName ,
+                    userPhoto: GigData.userPhoto ,
+                    photoUrl: GigData.photoUrl 
+                }
 
-
+            };
+            const result = await Gig.updateOne(query, UpdateCart, options)
+            res.send(result)
+        })
+        app.get('/gig', async (req, res) => {
+            const cursor = Gig.find()
+            const result = await cursor.toArray()
+            res.send(result)
+        })
+        app.get('/gig/:id', async (req, res) => {
+            const id = req.params.id
+            const query = { userFirebaseUid: id }
+            const result = await Gig.findOne(query)
+            res.send(result)
+        })
 
 
         await client.db("admin").command({ ping: 1 });
