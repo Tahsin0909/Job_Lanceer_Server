@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const port = process.env.PORT || 5000;
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config()
 const app = express()
 //middleware
@@ -35,6 +35,7 @@ async function run() {
         const User = database.collection('User')
         const Job = database.collection('Job')
         const WatchList = database.collection('WatchList')
+        const MyBid = database.collection('MyBid')
         const Gig = database.collection('Gig')
         // Send a ping to confirm a successful connection
         //User 
@@ -66,39 +67,60 @@ async function run() {
             const result = await User.updateOne(query, UpdateUser)
             res.send(result)
         })
-        //WatchList
-        app.put('/watchList', async (req, res) => {
-            const watchListData = req.body
-            console.log(watchListData);
+        //MyBid
+        app.put('/myBid', async (req, res) => {
+            const MyBidData = req.body
+            console.log(MyBidData);
             const options = { upsert: true }
             const query = {
-                jobId: watchListData.jobId,
-                userFirebaseUid: watchListData.userFirebaseUid,
+                jobId: MyBidData.jobId,
+                userFirebaseUid: MyBidData.userFirebaseUid,
             }
             const UpdateCart = {
                 $set:
                 {
-                    userFirebaseUid: watchListData.userFirebaseUid,
-                    email: watchListData.email,
-                    jobTitle: watchListData.jobTitle,
-                    jobCategory: watchListData.jobCategory,
-                    postedDate: watchListData.postedDate,
-                    jobId: watchListData.jobId
+                    userFirebaseUid: MyBidData.userFirebaseUid,
+                    email: MyBidData.email, 
+                    jobTitle: MyBidData.jobTitle, 
+                    jobCategory: MyBidData.jobCategory, 
+                    postedDate: MyBidData.postedDate, 
+                    deadLine: MyBidData.deadLine,
+                    jobId: MyBidData.jobId, 
+                    status: MyBidData.status,
                 }
 
             };
-            const result = await WatchList.updateOne(query, UpdateCart, options)
+            const result = await MyBid.updateOne(query, UpdateCart, options)
             res.send(result)
         })
-        app.get('/watchList', async (req, res) => {
-            const cursor = WatchList.find()
+        app.get('/myBid', async (req, res) => {
+            const cursor = MyBid.find()
             const result = await cursor.toArray()
             res.send(result)
         })
-        app.get('/watchList/:id', async (req, res) => {
+        app.get('/bid/:jobId', async (req, res) => {
+            const id = req.params.jobId
+            const query = { jobId: id}
+            const cursor = MyBid.find(query)
+            const result = await cursor.toArray()
+            res.send(result)
+        })
+        app.patch('/bid/:jobId', async (req, res) => {
+            const id = req.params.jobId
+            const statusData = req.body
+            const query = { jobId: id}
+            const UpdateStatus = {
+                $set: {
+                    status: statusData.status
+                }
+            }
+            const result = await MyBid.updateOne(query, UpdateStatus)
+            res.send(result)
+        })
+        app.get('/myBid/:id', async (req, res) => {
             const id = req.params.id
             const query = { userFirebaseUid: id }
-            const cursor = WatchList.find(query)
+            const cursor = MyBid.find(query)
             const result = await cursor.toArray()
             res.send(result)
         })
@@ -162,7 +184,42 @@ async function run() {
             const result = await Gig.findOne(query)
             res.send(result)
         })
+        //WatchList
+        app.put('/watchList', async (req, res) => {
+            const watchListData = req.body
+            console.log(watchListData);
+            const options = { upsert: true }
+            const query = {
+                jobId: watchListData.jobId,
+                userFirebaseUid: watchListData.userFirebaseUid,
+            }
+            const UpdateCart = {
+                $set:
+                {
+                    userFirebaseUid: watchListData.userFirebaseUid,
+                    email: watchListData.email,
+                    jobTitle: watchListData.jobTitle,
+                    jobCategory: watchListData.jobCategory,
+                    postedDate: watchListData.postedDate,
+                    jobId: watchListData.jobId
+                }
 
+            };
+            const result = await WatchList.updateOne(query, UpdateCart, options)
+            res.send(result)
+        })
+        app.get('/watchList', async (req, res) => {
+            const cursor = WatchList.find()
+            const result = await cursor.toArray()
+            res.send(result)
+        })
+        app.get('/watchList/:id', async (req, res) => {
+            const id = req.params.id
+            const query = { userFirebaseUid: id }
+            const cursor = WatchList.find(query)
+            const result = await cursor.toArray()
+            res.send(result)
+        })
 
         await client.db("admin").command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
