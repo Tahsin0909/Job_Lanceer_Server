@@ -79,6 +79,7 @@ async function run() {
             const UpdateCart = {
                 $set:
                 {
+                    bidRequestEmail: MyBidData.bidRequestEmail,
                     userFirebaseUid: MyBidData.userFirebaseUid,
                     email: MyBidData.email, 
                     jobTitle: MyBidData.jobTitle, 
@@ -120,6 +121,13 @@ async function run() {
         app.get('/myBid/:id', async (req, res) => {
             const id = req.params.id
             const query = { userFirebaseUid: id }
+            const cursor = MyBid.find(query)
+            const result = await cursor.toArray()
+            res.send(result)
+        })
+        app.get('/bidReq/:email', async (req, res) => {
+            const id = req.params.email
+            const query = {email: id }
             const cursor = MyBid.find(query)
             const result = await cursor.toArray()
             res.send(result)
