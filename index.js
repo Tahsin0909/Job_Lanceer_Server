@@ -81,12 +81,12 @@ async function run() {
                 {
                     bidRequestEmail: MyBidData.bidRequestEmail,
                     userFirebaseUid: MyBidData.userFirebaseUid,
-                    email: MyBidData.email, 
-                    jobTitle: MyBidData.jobTitle, 
-                    jobCategory: MyBidData.jobCategory, 
-                    postedDate: MyBidData.postedDate, 
+                    email: MyBidData.email,
+                    jobTitle: MyBidData.jobTitle,
+                    jobCategory: MyBidData.jobCategory,
+                    postedDate: MyBidData.postedDate,
                     deadLine: MyBidData.deadLine,
-                    jobId: MyBidData.jobId, 
+                    jobId: MyBidData.jobId,
                     status: MyBidData.status,
                 }
 
@@ -101,7 +101,7 @@ async function run() {
         })
         app.get('/bid/:jobId', async (req, res) => {
             const id = req.params.jobId
-            const query = { jobId: id}
+            const query = { jobId: id }
             const cursor = MyBid.find(query)
             const result = await cursor.toArray()
             res.send(result)
@@ -109,7 +109,7 @@ async function run() {
         app.patch('/bid/:jobId', async (req, res) => {
             const id = req.params.jobId
             const statusData = req.body
-            const query = { jobId: id}
+            const query = { jobId: id }
             const UpdateStatus = {
                 $set: {
                     status: statusData.status
@@ -127,7 +127,7 @@ async function run() {
         })
         app.get('/bidReq/:email', async (req, res) => {
             const id = req.params.email
-            const query = {email: id }
+            const query = { email: id }
             const cursor = MyBid.find(query)
             const result = await cursor.toArray()
             res.send(result)
@@ -151,6 +151,37 @@ async function run() {
             const result = await cursor.toArray()
             res.send(result)
         })
+        app.put('/UpdateJob/:id', async (req, res) => {
+            const id = req.params.id
+            const data = req.body
+            const query = { _id: new ObjectId(id) }
+            const UpdateCart = {
+                $set:
+                {
+                    email: data.email,
+                    jobTitle: data.jobTitle,
+                    description: data.description,
+                    minPrice: data.minPrice,
+                    maxPrice: data.maxPrice,
+                    tag1: data.tag1,
+                    tag2: data.tag2,
+                    deadLine: data.deadLine,
+                    jobCategory: data.jobCategory,
+                    postedDate: data.postedDate,
+                    userFirebaseUid: data.userFirebaseUid
+                }
+
+            };
+            const result = await Job.updateOne(query, UpdateCart, options)
+            res.send(result)
+        })
+        app.get('/jobCategory/:category', async (req, res) => {
+            const id = req.params.category
+            const query = { jobCategory: id }
+            const cursor = Job.find(query)
+            const result = await cursor.toArray()
+            res.send(result)
+        })
         //Gig
         app.put('/gig', async (req, res) => {
             const GigData = req.body
@@ -162,19 +193,19 @@ async function run() {
             const UpdateCart = {
                 $set:
                 {
-                    email: GigData.email ,
-                    gigTitle: GigData.gigTitle ,
-                    description: GigData.description ,
-                    minPrice: GigData.minPrice ,
-                    maxPrice: GigData.maxPrice ,
-                    tag1: GigData.tag1 ,
-                    tag2: GigData.tag2 ,
-                    rating: GigData.rating ,
-                    gigCategory: GigData.gigCategory ,
-                    userFirebaseUid: GigData.userFirebaseUid ,
-                    userName: GigData.userName ,
-                    userPhoto: GigData.userPhoto ,
-                    photoUrl: GigData.photoUrl 
+                    email: GigData.email,
+                    gigTitle: GigData.gigTitle,
+                    description: GigData.description,
+                    minPrice: GigData.minPrice,
+                    maxPrice: GigData.maxPrice,
+                    tag1: GigData.tag1,
+                    tag2: GigData.tag2,
+                    rating: GigData.rating,
+                    gigCategory: GigData.gigCategory,
+                    userFirebaseUid: GigData.userFirebaseUid,
+                    userName: GigData.userName,
+                    userPhoto: GigData.userPhoto,
+                    photoUrl: GigData.photoUrl
                 }
 
             };
