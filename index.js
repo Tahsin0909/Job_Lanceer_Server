@@ -5,9 +5,14 @@ const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config()
 const app = express()
 const jwt = require('jsonwebtoken')
+const cookieParser = require('cookie-parser')
 //middleware
-app.use(cors())
+app.use(cors({
+    origin: ['http://localhost:5173'],
+    credentials: true
+}))
 app.use(express.json())
+app.use(cookieParser())
 
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.uxzfht6.mongodb.net/?retryWrites=true&w=majority`;
@@ -21,7 +26,29 @@ const client = new MongoClient(uri, {
     }
 });
 
-
+const verify = async (req, res, next) => {
+    const token = req.cookies?.token
+    if (!token) {
+        return res.status(401).send(
+            {
+                status: "UnAuthorized",
+                code: '401'
+            }
+        )
+    }
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decode) => {
+        if (err) {
+            return res.status(401).send(
+                {
+                    status: "UnAuthorized",
+                    code: '401'
+                }
+            )
+        }
+        // req.decoded = decode;
+        next();
+    })
+}
 
 
 async function run() {
@@ -35,6 +62,17 @@ async function run() {
         const MyBid = database.collection('MyBid')
         const Gig = database.collection('Gig')
         // Send a ping to confirm a successful connection
+        //jwt
+        app.post('/jwt', async (req, res) => {
+            const payLoader = req.body
+            console.log(payLoader);
+            const token = jwt.sign(payLoader, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' })
+            console.log(token);
+            res.cookie('token', token, {
+                httpOnly: true,
+                secure: false,
+            }).send({ success: true })
+        })
         //User 
         app.post('/user', async (req, res) => {
             const user = req.body;
@@ -42,7 +80,7 @@ async function run() {
             const result = await User.insertOne(user)
             res.send(result)
         })
-        app.get('/user', async (req, res) => {
+        app.get('/user',verify, async (req, res) => {
             const cursor = User.find()
             const result = await cursor.toArray()
             res.send(result)
@@ -53,7 +91,7 @@ async function run() {
             const result = await User.findOne(query)
             res.send(result)
         })
-        app.patch('/user/:id', async (req, res) => {
+        app.patch('/user/:id',verify, async (req, res) => {
             const id = req.params.id
             const query = { userFirebaseUid: id }
             const UpdateUser = {
@@ -91,7 +129,7 @@ async function run() {
             const result = await MyBid.updateOne(query, UpdateCart, options)
             res.send(result)
         })
-        app.get('/myBid', async (req, res) => {
+        app.get('/myBid',verify, async (req, res) => {
             const cursor = MyBid.find()
             const result = await cursor.toArray()
             res.send(result)
@@ -126,12 +164,12 @@ async function run() {
             const id = req.params.id
             const StatusUrl = req.params.status
             console.log(id, StatusUrl);
-            const query = { userFirebaseUid: id, status: StatusUrl  }
+            const query = { userFirebaseUid: id, status: StatusUrl }
             const options = {
                 // Sort matched documents in descending order by rating
-                sort:{ "jobCategory": 1 },
+                sort: { "jobCategory": 1 },
 
-              };
+            };
             const cursor = MyBid.find(query, options)
             const result = await cursor.toArray()
             res.send(result)
@@ -150,7 +188,7 @@ async function run() {
             const result = await Job.insertOne(job)
             res.send(result)
         })
-        app.get('/job', async (req, res) => {
+        app.get('/job',verify, async (req, res) => {
             const cursor = Job.find()
             const result = await cursor.toArray()
             res.send(result)
