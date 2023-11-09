@@ -4,41 +4,10 @@ const port = process.env.PORT || 5000;
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config()
 const app = express()
+const jwt = require('jsonwebtoken')
 //middleware
-app.use(cors({
-    origin: ['http://localhost:5173'],
-    credentials: true
-}))
+app.use(cors())
 app.use(express.json())
-app.use(cors({
-    origin: ['http://localhost:5173'],
-    credentials: true
-}))
-
-
-const verify = async (req, res, next) => {
-    const token = req.cookies?.token
-    if (!token) {
-        return res.status(401).send(
-            {
-                status: "UnAuthorized",
-                code: '401'
-            }
-        )
-    }
-    jwt.verify(token, Secrete, (err, decode) => {
-        if (err) {
-            return res.status(401).send(
-                {
-                    status: "UnAuthorized",
-                    code: '401'
-                }
-            )
-        }
-        // req.decoded = decode;
-        next();
-    })
-}
 
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.uxzfht6.mongodb.net/?retryWrites=true&w=majority`;
@@ -153,6 +122,20 @@ async function run() {
             const result = await cursor.toArray()
             res.send(result)
         })
+        app.get('/sort/:id/:status', async (req, res) => {
+            const id = req.params.id
+            const StatusUrl = req.params.status
+            console.log(id, StatusUrl);
+            const query = { userFirebaseUid: id, status: StatusUrl  }
+            const options = {
+                // Sort matched documents in descending order by rating
+                sort:{ "jobCategory": 1 },
+
+              };
+            const cursor = MyBid.find(query, options)
+            const result = await cursor.toArray()
+            res.send(result)
+        })
         app.get('/bidReq/:email', async (req, res) => {
             const id = req.params.email
             const query = { email: id }
@@ -179,7 +162,7 @@ async function run() {
             const result = await cursor.toArray()
             res.send(result)
         })
-        app.put('/UpdateJob/:id', async (req, res) => {
+        app.put('/updateJob/:id', async (req, res) => {
             const id = req.params.id
             const data = req.body
             const query = { _id: new ObjectId(id) }
@@ -200,7 +183,21 @@ async function run() {
                 }
 
             };
-            const result = await Job.updateOne(query, UpdateCart, options)
+            const result = await Job.updateOne(query, UpdateCart)
+            res.send(result)
+        })
+        app.delete('/updateJob/:id', async (req, res) => {
+            const id = req.params.id
+            const query = { _id: new ObjectId(id) }
+            const filter = { jobId: id }
+            const result = await Job.deleteOne(query)
+            const result2 = await MyBid.deleteOne(filter)
+            res.send(result)
+        })
+        app.get('/updateJob/:id', async (req, res) => {
+            const id = req.params.id
+            const query = { _id: new ObjectId(id) }
+            const result = await Job.findOne(query)
             res.send(result)
         })
         app.get('/jobCategory/:category', async (req, res) => {
